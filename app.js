@@ -55,7 +55,7 @@
     vm.equipmentSizes = ['20', '40'];
     vm.shippingTypes = ['FCL', 'LCL', 'AEREO'];
     vm.containerTypes = ['REEFER', 'DRY', 'HIGH CUBE', 'OPEN TOP'];
-    vm.columnOrderStorageKey = 'iturriBookingColumnOrder.excel.v1';
+    vm.columnOrderStorageKey = 'iturriBookingColumnOrder.excel.v2';
 
     vm.fields = [
       { key: 'damStatus', label: 'estado', type: 'select', options: vm.validDamStatuses },
@@ -77,7 +77,7 @@
       { key: 'shipmentType', label: 'TIPO DE EMB.', type: 'select', options: vm.shippingTypes },
       { key: 'customsOffice', label: 'ADUANA' },
       { key: 'orderDua', label: 'OS/ NºDUA' },
-      { key: 'manifest2', label: 'MFTO 2' },
+      { key: 'manifest2', label: 'MFTO' },
       { key: 'destination', label: 'DESTINO' },
       { key: 'line', label: 'LINEA' },
       { key: 'containerQty', label: 'CANT', inputType: 'number', min: '0', dataType: 'number' },
@@ -99,6 +99,7 @@
       direction: null
     };
     vm.draggedFieldKey = null;
+    vm.loadDateGroups = {};
     vm.bookings = [];
     vm.originalBookings = {};
     vm.changedCells = {};
@@ -123,6 +124,8 @@
     vm.moveColumn = moveColumn;
     vm.handleColumnDrop = handleColumnDrop;
     vm.resetColumnOrder = resetColumnOrder;
+    vm.rowDateClass = rowDateClass;
+    vm.dateLegend = dateLegend;
     vm.pendingChangeCount = pendingChangeCount;
     vm.errorCount = errorCount;
     vm.hasPendingChanges = hasPendingChanges;
@@ -151,6 +154,7 @@
       vm.validationErrors = {};
       vm.auditLog = [];
       vm.saveSummary = null;
+      buildLoadDateGroups();
       refreshFilterOptions();
       validateAll();
     }
@@ -175,6 +179,32 @@
         row.paymentCode = row.paymentCode || 'CP-' + (900000 + index + 1);
         row.supplies = row.supplies || (row.containerType === 'REEFER' ? 'GENSET / PRECINTO' : 'PRECINTO');
         return row;
+      });
+    }
+
+    function buildLoadDateGroups() {
+      var dates = vm.bookings.map(function (row) {
+        return row.loadDate;
+      }).filter(function (value, index, values) {
+        return value && values.indexOf(value) === index;
+      }).sort();
+
+      vm.loadDateGroups = dates.reduce(function (acc, date, index) {
+        acc[date] = 'date-group-' + (index % 8);
+        return acc;
+      }, {});
+    }
+
+    function rowDateClass(row) {
+      return vm.loadDateGroups[row.loadDate] || '';
+    }
+
+    function dateLegend() {
+      return Object.keys(vm.loadDateGroups).sort().map(function (date) {
+        return {
+          date: date,
+          className: vm.loadDateGroups[date]
+        };
       });
     }
 

@@ -16,10 +16,12 @@ http://localhost:8080
 
 ## Alcance de la demo
 
-- Tabla editable con 15 bookings de ejemplo.
+- Tabla editable con 29 registros de ejemplo, modelados a nivel de contenedor.
 - Orden de columnas basado en la plantilla `Libro1.xlsx`.
 - Ordenamiento de filas por encabezado o selector superior.
 - Reordenamiento manual de columnas con arrastre o botones laterales.
+- Colores por fecha de carga para identificar dias con varios embarques.
+- Casos de ejemplo con un mismo BK repetido por varios contenedores: 4 y 10 contenedores.
 - Filtros por booking, cliente, operador, linea, estado DAM y rango de fecha de carga.
 - Resaltado amarillo para celdas modificadas.
 - Resaltado rojo para errores de validacion.

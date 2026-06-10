@@ -100,6 +100,7 @@ h2 {
 .filters,
 .status-strip,
 .grid-tools,
+.date-legend,
 .table-card,
 .audit-panel {
   background: var(--panel);
@@ -165,6 +166,38 @@ select:focus {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.date-legend {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+}
+
+.legend-title {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.legend-item {
+  align-items: center;
+  color: var(--text);
+  display: inline-flex;
+  font-size: 12px;
+  gap: 5px;
+}
+
+.legend-item i {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
+  display: inline-block;
+  height: 12px;
+  width: 16px;
 }
 
 .status-strip strong {
@@ -292,6 +325,46 @@ select:focus {
   background: #fff;
   min-width: 145px;
   position: relative;
+}
+
+.booking-grid tbody tr.date-group-0 td:not(.changed):not(.invalid),
+.legend-item i.date-group-0 {
+  background: #eaf4ff;
+}
+
+.booking-grid tbody tr.date-group-1 td:not(.changed):not(.invalid),
+.legend-item i.date-group-1 {
+  background: #eaf8ef;
+}
+
+.booking-grid tbody tr.date-group-2 td:not(.changed):not(.invalid),
+.legend-item i.date-group-2 {
+  background: #fff5dc;
+}
+
+.booking-grid tbody tr.date-group-3 td:not(.changed):not(.invalid),
+.legend-item i.date-group-3 {
+  background: #f2edff;
+}
+
+.booking-grid tbody tr.date-group-4 td:not(.changed):not(.invalid),
+.legend-item i.date-group-4 {
+  background: #e9f7f7;
+}
+
+.booking-grid tbody tr.date-group-5 td:not(.changed):not(.invalid),
+.legend-item i.date-group-5 {
+  background: #fff0ea;
+}
+
+.booking-grid tbody tr.date-group-6 td:not(.changed):not(.invalid),
+.legend-item i.date-group-6 {
+  background: #eef2f7;
+}
+
+.booking-grid tbody tr.date-group-7 td:not(.changed):not(.invalid),
+.legend-item i.date-group-7 {
+  background: #f7f4e8;
 }
 
 .booking-grid td:nth-child(1) {
