@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es" ng-app="bookingBulkApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestion Masiva de Bookings - Iturri App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body ng-controller="BookingBulkController as vm">
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Iturri App</p>
+        <h1>Gestión Masiva de Bookings</h1>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" type="button" ng-click="vm.saveChanges()" ng-disabled="!vm.hasPendingChanges() || vm.hasErrors()">
+          Guardar cambios
+        </button>
+        <button class="btn" type="button" ng-click="vm.discardChanges()" ng-disabled="!vm.hasPendingChanges()">
+          Descartar cambios
+        </button>
+        <button class="btn" type="button" ng-click="vm.exportExcel()">
+          Exportar Excel
+        </button>
+        <button class="btn" type="button" ng-click="vm.reloadData()">
+          Recargar data
+        </button>
+      </div>
+    </header>
+
+    <section class="filters" aria-label="Filtros de busqueda">
+      <label>
+        <span>Buscar Booking</span>
+        <input type="search" ng-model="vm.filters.booking" placeholder="BK-2026-0001">
+      </label>
+      <label>
+        <span>Cliente</span>
+        <select ng-model="vm.filters.client">
+          <option value="">Todos</option>
+          <option ng-repeat="client in vm.filterOptions.clients" value="{{client}}">{{client}}</option>
+        </select>
+      </label>
+      <label>
+        <span>Operador</span>
+        <select ng-model="vm.filters.operator">
+          <option value="">Todos</option>
+          <option ng-repeat="operator in vm.filterOptions.operators" value="{{operator}}">{{operator}}</option>
+        </select>
+      </label>
+      <label>
+        <span>Línea</span>
+        <select ng-model="vm.filters.line">
+          <option value="">Todas</option>
+          <option ng-repeat="line in vm.filterOptions.lines" value="{{line}}">{{line}}</option>
+        </select>
+      </label>
+      <label>
+        <span>Estado DAM</span>
+        <select ng-model="vm.filters.damStatus">
+          <option value="">Todos</option>
+          <option ng-repeat="status in vm.validDamStatuses" value="{{status}}">{{status}}</option>
+        </select>
+      </label>
+      <label>
+        <span>Fecha carga desde</span>
+        <input type="date" ng-model="vm.filters.loadDateFrom">
+      </label>
+      <label>
+        <span>Fecha carga hasta</span>
+        <input type="date" ng-model="vm.filters.loadDateTo">
+      </label>
+    </section>
+
+    <section class="status-strip">
+      <div><strong>{{vm.filteredBookings().length}}</strong> registros visibles</div>
+      <div><strong>{{vm.pendingChangeCount()}}</strong> celdas con cambios</div>
+      <div ng-class="{'danger-text': vm.hasErrors()}"><strong>{{vm.errorCount()}}</strong> errores de validacion</div>
+    </section>
+
+    <section class="table-card" aria-label="Tabla editable de bookings">
+      <div class="table-wrap">
+        <table class="booking-grid">
+          <thead>
+            <tr>
+              <th ng-repeat="field in vm.fields">{{field.label}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="booking in vm.filteredBookings() track by booking.id">
+              <td ng-repeat="field in vm.fields" ng-class="vm.cellClass(booking, field)">
+                <select ng-if="field.type === 'select'"
+                        ng-model="booking[field.key]"
+                        ng-options="option for option in field.options"
+                        ng-change="vm.onCellChange(booking, field)">
+                </select>
+                <input ng-if="field.type !== 'select'"
+                       type="{{field.inputType || 'text'}}"
+                       ng-model="booking[field.key]"
+                       ng-change="vm.onCellChange(booking, field)"
+                       ng-attr-min="{{field.min || undefined}}">
+                <small class="cell-error" ng-if="vm.validationErrors[booking.id] && vm.validationErrors[booking.id][field.key]">
+                  {{vm.validationErrors[booking.id][field.key]}}
+                </small>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="audit-panel">
+      <div class="section-heading">
+        <h2>Auditoría simulada</h2>
+        <span>Registro local de modificaciones de la sesion</span>
+      </div>
+      <div class="audit-wrap">
+        <table class="audit-grid">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Fecha/hora</th>
+              <th>Booking</th>
+              <th>Campo modificado</th>
+              <th>Valor anterior</th>
+              <th>Valor nuevo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="vm.auditLog.length === 0">
+              <td colspan="6" class="empty-state">Sin cambios registrados.</td>
+            </tr>
+            <tr ng-repeat="item in vm.auditLog | orderBy:'-timestamp'">
+              <td>{{item.user}}</td>
+              <td>{{item.timestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+              <td>{{item.booking}}</td>
+              <td>{{item.field}}</td>
+              <td>{{item.oldValue}}</td>
+              <td>{{item.newValue}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="modal-backdrop" ng-if="vm.saveSummary">
+      <section class="modal">
+        <h2>Guardado simulado exitoso</h2>
+        <p>Se registraron {{vm.saveSummary.length}} cambios. Esto aun no escribe en BD; la integracion real debe ir por endpoint transaccional.</p>
+        <div class="summary-list">
+          <div class="summary-item" ng-repeat="change in vm.saveSummary">
+            <strong>{{change.booking}}</strong>
+            <span>{{change.field}}: {{change.oldValue}} -> {{change.newValue}}</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="button" ng-click="vm.closeSummary()">Cerrar</button>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
