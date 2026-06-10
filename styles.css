@@ -99,6 +99,7 @@ h2 {
 
 .filters,
 .status-strip,
+.grid-tools,
 .table-card,
 .audit-panel {
   background: var(--panel);
@@ -151,6 +152,21 @@ select:focus {
   color: var(--muted);
 }
 
+.grid-tools {
+  align-items: end;
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+}
+
+.tool-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .status-strip strong {
   color: var(--text);
 }
@@ -195,11 +211,81 @@ select:focus {
   font-size: 11px;
   font-weight: 700;
   height: 34px;
-  padding: 8px;
+  padding: 0;
   position: sticky;
   text-transform: uppercase;
   top: 0;
   z-index: 3;
+}
+
+.booking-grid th.sorted-column {
+  background: #1b5f7d;
+}
+
+.booking-grid th.drop-target {
+  box-shadow: inset 3px 0 0 #ffd166;
+}
+
+.th-content {
+  align-items: stretch;
+  display: flex;
+  gap: 3px;
+  min-height: 38px;
+  padding: 4px;
+}
+
+.sort-trigger {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  gap: 5px;
+  justify-content: space-between;
+  line-height: 1.15;
+  min-width: 112px;
+  padding: 4px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.sort-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sort-trigger strong {
+  color: #ffd166;
+  font-size: 13px;
+}
+
+.column-actions {
+  align-items: center;
+  display: flex;
+  gap: 2px;
+}
+
+.column-actions button {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  height: 24px;
+  line-height: 1;
+  padding: 0;
+  width: 22px;
+}
+
+.column-actions button:hover,
+.sort-trigger:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .booking-grid td {
@@ -351,5 +437,9 @@ select:focus {
 
   .status-strip div + div {
     margin-top: 6px;
+  }
+
+  .grid-tools {
+    grid-template-columns: 1fr;
   }
 }

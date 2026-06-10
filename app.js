@@ -3,7 +3,46 @@
 
   angular
     .module('bookingBulkApp', [])
+    .directive('columnDrag', columnDrag)
     .controller('BookingBulkController', BookingBulkController);
+
+  function columnDrag() {
+    return {
+      restrict: 'A',
+      link: function (scope, element, attrs) {
+        element.attr('draggable', 'true');
+
+        element.on('dragstart', function (event) {
+          var dragEvent = event.originalEvent || event;
+          dragEvent.dataTransfer.effectAllowed = 'move';
+          dragEvent.dataTransfer.setData('text/plain', attrs.fieldKey);
+          scope.$apply(function () {
+            scope.vm.draggedFieldKey = attrs.fieldKey;
+          });
+        });
+
+        element.on('dragover', function (event) {
+          event.preventDefault();
+          var dragEvent = event.originalEvent || event;
+          dragEvent.dataTransfer.dropEffect = 'move';
+          element.addClass('drop-target');
+        });
+
+        element.on('dragleave drop', function () {
+          element.removeClass('drop-target');
+        });
+
+        element.on('drop', function (event) {
+          event.preventDefault();
+          var dragEvent = event.originalEvent || event;
+          var sourceKey = dragEvent.dataTransfer.getData('text/plain') || scope.vm.draggedFieldKey;
+          scope.$apply(function () {
+            scope.vm.handleColumnDrop(sourceKey, attrs.fieldKey);
+          });
+        });
+      }
+    };
+  }
 
   BookingBulkController.$inject = ['$http', '$filter'];
 
@@ -16,38 +55,50 @@
     vm.equipmentSizes = ['20', '40'];
     vm.shippingTypes = ['FCL', 'LCL', 'AEREO'];
     vm.containerTypes = ['REEFER', 'DRY', 'HIGH CUBE', 'OPEN TOP'];
+    vm.columnOrderStorageKey = 'iturriBookingColumnOrder.excel.v1';
 
     vm.fields = [
-      { key: 'bookingNumber', label: 'N° Booking' },
-      { key: 'client', label: 'Cliente' },
-      { key: 'operator', label: 'Operador' },
-      { key: 'line', label: 'Línea' },
-      { key: 'vessel', label: 'Nave' },
-      { key: 'voyage', label: 'Viaje' },
-      { key: 'product', label: 'Producto' },
-      { key: 'departurePort', label: 'Puerto de salida' },
-      { key: 'destination', label: 'Destino' },
-      { key: 'loadDate', label: 'Fecha de carga', inputType: 'text' },
-      { key: 'eta', label: 'ETA', inputType: 'text' },
-      { key: 'week', label: 'Semana' },
-      { key: 'shipmentType', label: 'Tipo de embarque', type: 'select', options: vm.shippingTypes },
-      { key: 'damPerContainer', label: 'DAM por contenedor', type: 'select', options: vm.yesNoOptions },
-      { key: 'containerQty', label: 'Cantidad de contenedores', inputType: 'number', min: '0' },
-      { key: 'equipmentSize', label: 'Equipment Size', type: 'select', options: vm.equipmentSizes },
-      { key: 'containerType', label: 'Tipo contenedor', type: 'select', options: vm.containerTypes },
-      { key: 'temperature', label: 'Temperatura' },
-      { key: 'terminal', label: 'Terminal de embarque' },
-      { key: 'customsOffice', label: 'Aduana de salida' },
-      { key: 'damNumber', label: 'N° DAM' },
-      { key: 'orderNumber', label: 'N° Orden' },
-      { key: 'numberingDate', label: 'Fecha numeración', inputType: 'text' },
-      { key: 'containerNumber', label: 'N° Contenedor' },
-      { key: 'damStatus', label: 'Estado DAM', type: 'select', options: vm.validDamStatuses },
-      { key: 'dfSent', label: 'D.F Enviado', type: 'select', options: vm.yesNoOptions },
-      { key: 'endorsementSent', label: 'Refrendo Enviado', type: 'select', options: vm.yesNoOptions },
-      { key: 'referenceCode', label: 'Código asunto / referencia' }
+      { key: 'damStatus', label: 'estado', type: 'select', options: vm.validDamStatuses },
+      { key: 'loadDate', label: 'FECHA CARGA', inputType: 'text', dataType: 'date' },
+      { key: 'bookingNumber', label: 'BOOKING' },
+      { key: 'registry', label: 'REG' },
+      { key: 'od', label: 'O.D' },
+      { key: 'damNumber', label: 'DAM' },
+      { key: 'channel', label: 'CANAL' },
+      { key: 'referenceCode', label: 'REF' },
+      { key: 'vgm', label: 'VGM', type: 'select', options: vm.yesNoOptions },
+      { key: 'dfSent', label: 'DF', type: 'select', options: vm.yesNoOptions },
+      { key: 'vb', label: 'vb', type: 'select', options: vm.yesNoOptions },
+      { key: 'observation', label: 'OBSERVACION' },
+      { key: 'operator', label: 'OPERADOR' },
+      { key: 'client', label: 'EMBARCADOR' },
+      { key: 'vessel', label: 'NAVE' },
+      { key: 'manifest', label: 'MFTO' },
+      { key: 'shipmentType', label: 'TIPO DE EMB.', type: 'select', options: vm.shippingTypes },
+      { key: 'customsOffice', label: 'ADUANA' },
+      { key: 'orderDua', label: 'OS/ NºDUA' },
+      { key: 'manifest2', label: 'MFTO 2' },
+      { key: 'destination', label: 'DESTINO' },
+      { key: 'line', label: 'LINEA' },
+      { key: 'containerQty', label: 'CANT', inputType: 'number', min: '0', dataType: 'number' },
+      { key: 'product', label: 'MERCANCIA' },
+      { key: 'dt', label: 'DT' },
+      { key: 'appointment', label: 'CITA' },
+      { key: 'containerNumber', label: 'CONTENEDOR' },
+      { key: 'paBag', label: 'BOLSA P.A.' },
+      { key: 'billing', label: 'FACTURACION' },
+      { key: 'paymentCode', label: 'CODIGO DE PAGO' },
+      { key: 'supplies', label: 'INSUMOS' }
     ];
 
+    vm.defaultFieldOrder = vm.fields.map(function (field) {
+      return field.key;
+    });
+    vm.sortState = {
+      key: null,
+      direction: null
+    };
+    vm.draggedFieldKey = null;
     vm.bookings = [];
     vm.originalBookings = {};
     vm.changedCells = {};
@@ -64,6 +115,14 @@
     vm.onCellChange = onCellChange;
     vm.cellClass = cellClass;
     vm.filteredBookings = filteredBookings;
+    vm.cycleSort = cycleSort;
+    vm.setSortDirection = setSortDirection;
+    vm.clearSort = clearSort;
+    vm.sortIcon = sortIcon;
+    vm.activeSortLabel = activeSortLabel;
+    vm.moveColumn = moveColumn;
+    vm.handleColumnDrop = handleColumnDrop;
+    vm.resetColumnOrder = resetColumnOrder;
     vm.pendingChangeCount = pendingChangeCount;
     vm.errorCount = errorCount;
     vm.hasPendingChanges = hasPendingChanges;
@@ -74,6 +133,7 @@
     vm.reloadData = reloadData;
     vm.closeSummary = closeSummary;
 
+    applySavedColumnOrder();
     loadData();
 
     function loadData() {
@@ -85,14 +145,45 @@
     }
 
     function setData(data) {
-      vm.bookings = angular.copy(data);
-      vm.originalBookings = indexById(data);
+      vm.bookings = enrichBookings(angular.copy(data));
+      vm.originalBookings = indexById(vm.bookings);
       vm.changedCells = {};
       vm.validationErrors = {};
       vm.auditLog = [];
       vm.saveSummary = null;
       refreshFilterOptions();
       validateAll();
+    }
+
+    function enrichBookings(rows) {
+      var channels = ['VERDE', 'NARANJA', 'ROJO'];
+
+      return rows.map(function (row, index) {
+        row.registry = row.registry || 'REG-' + pad(index + 1, 3);
+        row.od = row.od || 'OD-' + (2400 + index + 1);
+        row.channel = row.channel || channels[index % channels.length];
+        row.vgm = row.vgm || (index % 3 === 0 ? 'No' : 'Sí');
+        row.vb = row.vb || (row.damStatus === 'Enviado' ? 'Sí' : 'No');
+        row.observation = row.observation || (row.damStatus === 'Observado' ? 'Revisar DAM y canal' : '');
+        row.manifest = row.manifest || 'MFTO-' + (8000 + index + 1);
+        row.orderDua = row.orderDua || row.orderNumber + ' / ' + row.damNumber;
+        row.manifest2 = row.manifest2 || row.voyage;
+        row.dt = row.dt || 'DT-' + (5000 + index + 1);
+        row.appointment = row.appointment || row.loadDate + ' 08:00';
+        row.paBag = row.paBag || (index % 2 === 0 ? 'APLICA' : 'NO APLICA');
+        row.billing = row.billing || (row.damStatus === 'Enviado' ? 'FACTURADO' : 'PENDIENTE');
+        row.paymentCode = row.paymentCode || 'CP-' + (900000 + index + 1);
+        row.supplies = row.supplies || (row.containerType === 'REEFER' ? 'GENSET / PRECINTO' : 'PRECINTO');
+        return row;
+      });
+    }
+
+    function pad(value, size) {
+      var text = String(value);
+      while (text.length < size) {
+        text = '0' + text;
+      }
+      return text;
     }
 
     function indexById(rows) {
@@ -221,13 +312,179 @@
     }
 
     function filteredBookings() {
-      return vm.bookings.filter(function (row) {
+      var rows = vm.bookings.filter(function (row) {
         return matchesText(row.bookingNumber, vm.filters.booking) &&
           matchesExact(row.client, vm.filters.client) &&
           matchesExact(row.operator, vm.filters.operator) &&
           matchesExact(row.line, vm.filters.line) &&
           matchesExact(row.damStatus, vm.filters.damStatus) &&
           matchesDateRange(row.loadDate, vm.filters.loadDateFrom, vm.filters.loadDateTo);
+      });
+
+      return sortRows(rows);
+    }
+
+    function cycleSort(field) {
+      if (vm.sortState.key !== field.key) {
+        vm.sortState.key = field.key;
+        vm.sortState.direction = 'asc';
+        return;
+      }
+
+      if (vm.sortState.direction === 'asc') {
+        vm.sortState.direction = 'desc';
+        return;
+      }
+
+      clearSort();
+    }
+
+    function setSortDirection(direction) {
+      if (!vm.sortState.key) {
+        return;
+      }
+
+      vm.sortState.direction = direction;
+    }
+
+    function clearSort() {
+      vm.sortState.key = null;
+      vm.sortState.direction = null;
+    }
+
+    function sortIcon(field) {
+      if (vm.sortState.key !== field.key) {
+        return '↕';
+      }
+
+      return vm.sortState.direction === 'asc' ? '↑' : '↓';
+    }
+
+    function activeSortLabel() {
+      var field = getField(vm.sortState.key);
+
+      if (!field) {
+        return 'Sin orden aplicado';
+      }
+
+      return field.label + ' ' + (vm.sortState.direction === 'asc' ? 'ascendente' : 'descendente');
+    }
+
+    function sortRows(rows) {
+      var field = getField(vm.sortState.key);
+
+      if (!field || !vm.sortState.direction) {
+        return rows;
+      }
+
+      return rows.slice().sort(function (left, right) {
+        var result = compareValues(left[field.key], right[field.key], field.dataType);
+        return vm.sortState.direction === 'asc' ? result : result * -1;
+      });
+    }
+
+    function compareValues(left, right, dataType) {
+      if (dataType === 'number') {
+        return numericValue(left) - numericValue(right);
+      }
+
+      if (dataType === 'date') {
+        return dateValue(left) - dateValue(right);
+      }
+
+      return String(left || '').localeCompare(String(right || ''), 'es', {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    }
+
+    function numericValue(value) {
+      var number = Number(value);
+      return isNaN(number) ? Number.NEGATIVE_INFINITY : number;
+    }
+
+    function dateValue(value) {
+      var date = parseDate(value);
+      return date ? date.getTime() : Number.NEGATIVE_INFINITY;
+    }
+
+    function moveColumn(field, direction) {
+      var currentIndex = vm.fields.indexOf(field);
+      var nextIndex = currentIndex + direction;
+
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= vm.fields.length) {
+        return;
+      }
+
+      vm.fields.splice(currentIndex, 1);
+      vm.fields.splice(nextIndex, 0, field);
+      persistColumnOrder();
+    }
+
+    function handleColumnDrop(sourceKey, targetKey) {
+      if (!sourceKey || !targetKey || sourceKey === targetKey) {
+        vm.draggedFieldKey = null;
+        return;
+      }
+
+      var sourceIndex = fieldIndex(sourceKey);
+      var targetIndex = fieldIndex(targetKey);
+
+      if (sourceIndex === -1 || targetIndex === -1) {
+        vm.draggedFieldKey = null;
+        return;
+      }
+
+      var sourceField = vm.fields.splice(sourceIndex, 1)[0];
+      var adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+      vm.fields.splice(adjustedTargetIndex, 0, sourceField);
+      vm.draggedFieldKey = null;
+      persistColumnOrder();
+    }
+
+    function resetColumnOrder() {
+      vm.fields = vm.defaultFieldOrder.map(getField).filter(Boolean);
+      localStorage.removeItem(vm.columnOrderStorageKey);
+    }
+
+    function applySavedColumnOrder() {
+      var storedOrder = [];
+
+      try {
+        storedOrder = JSON.parse(localStorage.getItem(vm.columnOrderStorageKey) || '[]');
+      } catch (error) {
+        storedOrder = [];
+      }
+
+      if (!Array.isArray(storedOrder) || storedOrder.length === 0) {
+        return;
+      }
+
+      var orderedFields = storedOrder.map(getField).filter(Boolean);
+      var missingFields = vm.fields.filter(function (field) {
+        return storedOrder.indexOf(field.key) === -1;
+      });
+
+      if (orderedFields.length > 0) {
+        vm.fields = orderedFields.concat(missingFields);
+      }
+    }
+
+    function persistColumnOrder() {
+      localStorage.setItem(vm.columnOrderStorageKey, JSON.stringify(vm.fields.map(function (field) {
+        return field.key;
+      })));
+    }
+
+    function fieldIndex(key) {
+      return vm.fields.findIndex(function (field) {
+        return field.key === key;
+      });
+    }
+
+    function getField(key) {
+      return vm.fields.find(function (field) {
+        return field.key === key;
       });
     }
 

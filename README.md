@@ -17,6 +17,9 @@ http://localhost:8080
 ## Alcance de la demo
 
 - Tabla editable con 15 bookings de ejemplo.
+- Orden de columnas basado en la plantilla `Libro1.xlsx`.
+- Ordenamiento de filas por encabezado o selector superior.
+- Reordenamiento manual de columnas con arrastre o botones laterales.
 - Filtros por booking, cliente, operador, linea, estado DAM y rango de fecha de carga.
 - Resaltado amarillo para celdas modificadas.
 - Resaltado rojo para errores de validacion.

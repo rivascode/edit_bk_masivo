@@ -26,6 +26,9 @@
         <button class="btn" type="button" ng-click="vm.reloadData()">
           Recargar data
         </button>
+        <button class="btn" type="button" ng-click="vm.resetColumnOrder()">
+          Orden Excel
+        </button>
       </div>
     </header>
 
@@ -76,6 +79,24 @@
       <div><strong>{{vm.filteredBookings().length}}</strong> registros visibles</div>
       <div><strong>{{vm.pendingChangeCount()}}</strong> celdas con cambios</div>
       <div ng-class="{'danger-text': vm.hasErrors()}"><strong>{{vm.errorCount()}}</strong> errores de validacion</div>
+      <div><strong>{{vm.activeSortLabel()}}</strong></div>
+    </section>
+
+    <section class="grid-tools" aria-label="Herramientas de ordenamiento">
+      <label>
+        <span>Ordenar por columna</span>
+        <select ng-model="vm.sortState.key"
+                ng-change="vm.setSortDirection(vm.sortState.direction || 'asc')"
+                ng-options="field.key as field.label for field in vm.fields">
+          <option value="">Sin orden</option>
+        </select>
+      </label>
+      <div class="tool-buttons">
+        <button class="btn" type="button" ng-click="vm.setSortDirection('asc')" ng-disabled="!vm.sortState.key">Ascendente</button>
+        <button class="btn" type="button" ng-click="vm.setSortDirection('desc')" ng-disabled="!vm.sortState.key">Descendente</button>
+        <button class="btn" type="button" ng-click="vm.clearSort()" ng-disabled="!vm.sortState.key">Limpiar orden</button>
+        <button class="btn" type="button" ng-click="vm.resetColumnOrder()">Restaurar columnas del Excel</button>
+      </div>
     </section>
 
     <section class="table-card" aria-label="Tabla editable de bookings">
@@ -83,7 +104,21 @@
         <table class="booking-grid">
           <thead>
             <tr>
-              <th ng-repeat="field in vm.fields">{{field.label}}</th>
+              <th ng-repeat="field in vm.fields"
+                  column-drag
+                  field-key="{{field.key}}"
+                  ng-class="{'sorted-column': vm.sortState.key === field.key}">
+                <div class="th-content">
+                  <button class="sort-trigger" type="button" ng-click="vm.cycleSort(field)" title="Ordenar columna">
+                    <span>{{field.label}}</span>
+                    <strong>{{vm.sortIcon(field)}}</strong>
+                  </button>
+                  <div class="column-actions">
+                    <button type="button" ng-click="vm.moveColumn(field, -1)" title="Mover columna a la izquierda">‹</button>
+                    <button type="button" ng-click="vm.moveColumn(field, 1)" title="Mover columna a la derecha">›</button>
+                  </div>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
